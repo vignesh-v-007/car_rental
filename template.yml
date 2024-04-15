@@ -6,6 +6,24 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
     Description: AMI ID for the EC2 instance.
+  databasename:
+    Type: String
+    Description: DB name.
+  masterpassword:
+    Type: String
+    Description: Password for the DB
+    NoEcho: True
+    MinLength: 8
+    ConstraintDescription: must be at least 8 characters
+  SubnetA:
+    Type: String
+    Description: subnet1 id
+  SubnetB:
+    Type: String
+    Description:  subnet2 id
+  SubnetC:
+    Type: String
+    Description: subnet3 id
 
 Resources:
   MySecurityGroup:
@@ -57,6 +75,27 @@ Resources:
                   - 'codedeploy:RegisterApplicationRevision'
                 Resource: '*'
   
+  MyDBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Security group for RDS DB Instance'
+      VpcId:
+        Ref: 'AWS::NoValue' # Use the default VPC
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '0.0.0.0/0' # Be sure to restrict this to your IP in production
+
+  MyDBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: 'Subnet Group for RDS'
+      SubnetIds:
+        - !Ref SubnetA
+        - !Ref SubnetB
+        - !Ref SubnetC
+  
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -86,6 +125,24 @@ Resources:
           Value: project1
         - Key: Name
           Value: car_rental
+  
+  MyDBInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: !Ref databasename
+      AllocatedStorage: '20' # Minimum storage for PostgreSQL is 20 GiB
+      DBInstanceClass: 'db.t2.micro'
+      Engine: 'postgres'
+      EngineVersion: '13.3'
+      MasterUsername: 'postgres'
+      MasterUserPassword: !Ref masterpassword
+      DBSubnetGroupName:
+        Ref: MyDBSubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt MyDBSecurityGroup.GroupId
+      MultiAZ: false
+      PubliclyAccessible: true
+      StorageType: 'gp2'
 
 Outputs:
   InstanceId:
