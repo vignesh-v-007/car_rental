@@ -122,7 +122,7 @@ Resources:
           ./install auto
       Tags:
         - Key: dgroup
-          Value: project1
+          Value: project2
         - Key: Name
           Value: car_rental
   
