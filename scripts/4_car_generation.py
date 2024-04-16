@@ -9,7 +9,7 @@ import random
 
 # Database connection parameters
 db_params = {
-    "dbname": "car-rental",
+    "dbname": "car_rental",
     "user": "postgres",
     "password": "postgres",
     "host": "localhost",
