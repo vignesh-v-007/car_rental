@@ -5,7 +5,7 @@ import random
 
 # Database connection parameters
 db_params = {
-    "dbname": "car-rental",
+    "dbname": "car_rental",
     "user": "postgres",
     "password": "postgres",
     "host": "localhost",
@@ -26,6 +26,13 @@ try:
     # Connect to the PostgreSQL database
     conn = psycopg2.connect(**db_params)
     cursor = conn.cursor()
+
+    # Full up the booking_insurance table
+    cursor.execute(
+    """INSERT INTO booking_insurance (insurance_category, insurance_details, cost_per_day) VALUES 
+    ('category_1', 'Basic insurance package', 15.00),
+    ('category_2', 'Comprehensive insurance package', 30.00),
+    ('category_3', 'Premium insurance package', 45.00);""")
 
     # Get customer IDs from the "customer" table
     customer_ids = get_customer_ids(cursor)
